@@ -12,7 +12,7 @@ class IEdge{
 public:
     unsigned int first = 0; // first vertex
     unsigned int second = 0; //second vertex 
-     ~IEdge(){}; //no edge weight if graph is unweighted
+    //no edge weight if graph is unweighted
 };
 
 template <typename DistanceType, typename EdgeType> 
@@ -21,6 +21,7 @@ public:
     virtual DistanceType getNullDistance() = 0; //null distance
     virtual DistanceType getInfDistance() = 0;//inf distance
     virtual DistanceType getNewDistance(DistanceType dist, EdgeType* edge) = 0;//function
+    virtual ~IDistance() {}
 };
 
 template <typename DistanceType, typename EdgeType>
@@ -32,31 +33,38 @@ public:
     Graph(IDistance<DistanceType, EdgeType>* dist, unsigned int n): distance(dist), VertexCapacity(n),edges(vector<vector<EdgeType*>>(n)){}
 
     void addEdge(EdgeType* edge){
+      
         ++EdgesCapacity;
         edges[edge->first].push_back(edge);
     }
     unsigned int getVertexCapacity(){
+      
         return VertexCapacity;
     }
     unsigned int getEdgesCapacity(){
+      
         return EdgesCapacity;
     }
 };
 
 template < typename DistanceType, typename EdgeType >
 vector<DistanceType> dijkstra(Graph<DistanceType, EdgeType>* graph, unsigned int start){
+  
     vector<DistanceType> dist(graph->getVertexCapacity(), graph->distance->getInfDistance());
     dist[start] = graph->distance->getNullDistance();
     set<pair<DistanceType, unsigned int>> setVertexes;
     setVertexes.insert(make_pair(dist[start], start));
+    
     while (!setVertexes.empty()){
+      
         unsigned int v = setVertexes.begin()->second;
         setVertexes.erase(setVertexes.begin());
         for (size_t i = 0; i < graph->edges[v].size(); ++i){
+	  
             size_t to = graph->edges[v][i]->second;
             DistanceType newDistance = graph->distance->getNewDistance(dist[v], graph->edges[v][i]);
-            if (newDistance < dist[to])
-            {
+            if (newDistance < dist[to]){
+	      
                 setVertexes.erase(make_pair(dist[to], to));
                 dist[to] = newDistance;
                 setVertexes.insert(make_pair(dist[to], to));
@@ -78,12 +86,15 @@ public:
 class NormalDistance: public IDistance<unsigned int, NormalEdge>{ // normal function: sum
 public:
     unsigned int getNullDistance(){
+      
         return 0;
     }
     unsigned int getInfDistance(){
+      
         return INT_MAX;
     }
     unsigned int getNewDistance(unsigned int dist, NormalEdge* edge){
+      
         return dist + edge->weight;
     }
     NormalDistance(){};
@@ -99,12 +110,15 @@ public:
 class BusDistance: public IDistance<unsigned int, BusEdge>{
 public:
     unsigned int getNullDistance(){
+      
         return 0;
     }
     unsigned int getInfDistance(){
+      
         return INT_MAX;
     }
     unsigned int getNewDistance(unsigned int dist, BusEdge* edge){
+      
         return dist <= edge->start ? edge->finish : getInfDistance(); //func for bus problem
     }
     BusDistance(){};
@@ -120,23 +134,29 @@ class TransportDistance: public IDistance<unsigned int, TransportEdge>{
 public:
     unsigned int weight;
     unsigned int getNullDistance(){
+      
         return 0;
     }
     unsigned int getInfDistance(){
+      
         return 1441;
     }
     unsigned int getNewDistance(unsigned int dist, TransportEdge* edge){
+      
         return weight <= edge->maxWeight ? dist + edge->time : getInfDistance(); //func for transport problem
     }
     TransportDistance(){};
 };
 
 int main(){ //transport problem answer http://informatics.mccme.ru/mod/statements/view3.php?id=10845&chapterid=1967#1
+  
     unsigned int n, m;
     cin >> n >> m;
     TransportDistance* transportDistance = new TransportDistance();
     Graph<unsigned int, TransportEdge>* graph = new Graph<unsigned int, TransportEdge>(transportDistance, n);
+    
     for (size_t j = 0; j < m; ++j){
+      
         unsigned int start, finish, time, maxWeight;
         cin >> start >> finish >> time >> maxWeight;
         start--;
@@ -149,7 +169,9 @@ int main(){ //transport problem answer http://informatics.mccme.ru/mod/statement
 
     unsigned int left = 3000000;
     unsigned int right = 1000000001 + left;
+    
     while (right - left > 1){
+      
         unsigned int middle = (left + right) / 2;
         transportDistance->weight = middle;
         vector<unsigned int> answer = dijkstra(graph, 0);
